@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect } from "react";
 import { styled } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
 import Stepper from "@mui/material/Stepper";
@@ -14,6 +14,7 @@ import StepConnector, {
 import { useState } from "react";
 import { StepIconProps } from "@mui/material/StepIcon";
 import { MetaMaskButton, useAccount } from "@metamask/sdk-react-ui";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const QontoConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -154,11 +155,28 @@ const steps = [
 
 export default function CustomizedSteppers() {
   const { isConnected } = useAccount();
+  const [socialAccount, setSocialAccount] = useState<any>();
   const [currentStep, setCurrentStep] = useState(0);
+  const [aadhaar, setAadhaar] = useState("");
+  const { loginWithPopup, isAuthenticated, logout, user } = useAuth0();
 
   const nextStep = () => {
     setCurrentStep((prev) => prev + 1);
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log(user);
+      const auth = {
+        email: user?.email,
+        name: user?.name,
+        picture: user?.picture,
+        sub: user?.sub,
+      };
+      setSocialAccount(auth);
+    }
+  }, [isAuthenticated]);
+
   return (
     <div>
       <h1 className="font-bold text-center text-4xl mt-40 mb-24">Social Hub</h1>
@@ -191,9 +209,49 @@ export default function CustomizedSteppers() {
             )}
           </div>
         ) : currentStep == 1 ? (
-          <></>
+          <div>
+            {socialAccount && (
+              <div className="text-center">
+                <h1 className="text-green-500">Google account linked!</h1>
+                <div className="flex mt-3 items-center">
+                  <div className="w-14 text-white h-14 rounded-full overflow-hidden">
+                    <img src={socialAccount.picture} />
+                  </div>
+                  <h1 className="font-bold ml-3">{socialAccount.name}</h1>
+                </div>
+              </div>
+            )}
+            {socialAccount ? (
+              <button
+                className="px-3 py-2 bg-orange-400 mt-10"
+                onClick={() => nextStep()}
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                onClick={() => loginWithPopup()}
+                className="px-3 py-2 bg-orange-400 mt-10"
+              >
+                Connect Social Accounts
+              </button>
+            )}
+          </div>
         ) : (
-          <></>
+          <div className="flex flex-col">
+            <input
+              className="px-4 py-2 text-black"
+              placeholder="Enter 12 digit aadhaar"
+              onChange={(e) => setAadhaar(e.target.value)}
+              value={aadhaar}
+            />
+            <button
+              className="px-3 py-2 bg-orange-400 mt-10"
+              onClick={() => nextStep()}
+            >
+              Verify
+            </button>
+          </div>
         )}
       </div>
     </div>
