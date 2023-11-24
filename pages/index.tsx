@@ -13,6 +13,7 @@ import StepConnector, {
 } from "@mui/material/StepConnector";
 import { useState } from "react";
 import { StepIconProps } from "@mui/material/StepIcon";
+import { MetaMaskButton, useAccount } from "@metamask/sdk-react-ui";
 
 const QontoConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -74,6 +75,8 @@ function QontoStepIcon(props: StepIconProps) {
     </QontoStepIconRoot>
   );
 }
+
+const connectMetamask = () => {};
 
 const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -150,12 +153,15 @@ const steps = [
 ];
 
 export default function CustomizedSteppers() {
+  const { isConnected } = useAccount();
   const [currentStep, setCurrentStep] = useState(0);
+
+  const nextStep = () => {
+    setCurrentStep((prev) => prev + 1);
+  };
   return (
     <div>
-      <h1 className="font-bold text-white text-center text-4xl mt-40 mb-24">
-        Social Hub
-      </h1>
+      <h1 className="font-bold text-center text-4xl mt-40 mb-24">Social Hub</h1>
       <Stack sx={{ width: "100%" }} spacing={4}>
         <Stepper
           alternativeLabel
@@ -173,9 +179,17 @@ export default function CustomizedSteppers() {
       </Stack>
       <div className="flex items-center justify-center mt-32">
         {currentStep == 0 ? (
-          <button className="bg-orange-400 px-4 py-4 rounded-md">
-            Connect Wallet
-          </button>
+          <div className="flex flex-col">
+            <MetaMaskButton theme={"dark"} color="blue"></MetaMaskButton>
+            {isConnected && (
+              <button
+                className="px-3 py-2 bg-orange-400 mt-10"
+                onClick={() => nextStep()}
+              >
+                Next
+              </button>
+            )}
+          </div>
         ) : currentStep == 1 ? (
           <></>
         ) : (
