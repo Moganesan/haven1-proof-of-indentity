@@ -7,7 +7,7 @@ const config: HardhatUserConfig = {
     polygon: {
       url: "https://rpc-mumbai.maticvigil.com/",
       accounts: [
-        "72a75a73567bf9f703fdf94c7d625b9b79290e6bbb879b01e5c0db14ca2ae69c",
+        "20d56a188a8505d024da58053d057131aa891be2d75942eb0ab75e1baccdc818",
       ],
     },
   },

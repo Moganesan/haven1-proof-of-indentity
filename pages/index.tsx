@@ -14,6 +14,10 @@ import StepConnector, {
 import { useState } from "react";
 import { StepIconProps } from "@mui/material/StepIcon";
 import { MetaMaskButton, useAccount } from "@metamask/sdk-react-ui";
+import { useSDK } from "@metamask/sdk-react";
+import { ethers } from "ethers";
+import detectEthereumProvider from "@metamask/detect-provider";
+import Abi from "@/abi.json";
 import { useAuth0 } from "@auth0/auth0-react";
 
 const QontoConnector = styled(StepConnector)(({ theme }) => ({
@@ -62,22 +66,6 @@ const QontoStepIconRoot = styled("div")<{ ownerState: { active?: boolean } }>(
     },
   })
 );
-
-function QontoStepIcon(props: StepIconProps) {
-  const { active, completed, className } = props;
-
-  return (
-    <QontoStepIconRoot ownerState={{ active }} className={className}>
-      {completed ? (
-        <Check className="QontoStepIcon-completedIcon" />
-      ) : (
-        <div className="QontoStepIcon-circle" />
-      )}
-    </QontoStepIconRoot>
-  );
-}
-
-const connectMetamask = () => {};
 
 const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -160,6 +148,7 @@ export default function CustomizedSteppers() {
   const [aadhaar, setAadhaar] = useState("");
   const { loginWithPopup, isAuthenticated, logout, user } = useAuth0();
 
+  const {} = useSDK();
   const nextStep = () => {
     setCurrentStep((prev) => prev + 1);
   };
@@ -177,6 +166,50 @@ export default function CustomizedSteppers() {
     }
   }, [isAuthenticated]);
 
+  const verifyWallet = async () => {
+    const contractAddress: any = process.env.NEXT_PUBLIC_SOCIAL_HUB_CONTRACT;
+    console.log("COntract Address", contractAddress);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const signer = provider.getSigner();
+    console.log(await signer.getAddress());
+    const contract = new ethers.Contract(contractAddress, Abi, signer);
+
+    console.log(socialAccount);
+
+    try {
+      const contractCall = await contract.verifyWallet(signer.getAddress());
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const verifyProfile = async () => {
+    const contractAddress: any = process.env.NEXT_PUBLIC_SOCIAL_HUB_CONTRACT;
+    console.log("COntract Address", contractAddress);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const signer = provider.getSigner();
+    console.log(await signer.getAddress());
+    const contract = new ethers.Contract(contractAddress, Abi, signer);
+
+    console.log(socialAccount);
+
+    try {
+      const contractCall = await contract.addVerifiedUser(
+        socialAccount.name.toString(),
+        socialAccount.sub.toString(),
+        socialAccount.email.toString(),
+        socialAccount.picture.toString()
+      );
+
+      await contractCall.wait();
+
+      console.log(contractCall);
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return (
     <div>
       <h1 className="font-bold text-center text-4xl mt-40 mb-24">Social Hub</h1>
@@ -239,15 +272,9 @@ export default function CustomizedSteppers() {
           </div>
         ) : (
           <div className="flex flex-col">
-            <input
-              className="px-4 py-2 text-black"
-              placeholder="Enter 12 digit aadhaar"
-              onChange={(e) => setAadhaar(e.target.value)}
-              value={aadhaar}
-            />
             <button
               className="px-3 py-2 bg-orange-400 mt-10"
-              onClick={() => nextStep()}
+              onClick={() => verifyWallet()}
             >
               Verify
             </button>

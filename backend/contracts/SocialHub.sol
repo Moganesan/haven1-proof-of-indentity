@@ -106,21 +106,21 @@ contract SocialHub is AccessControl {
   }
 
   function addVerifiedUser(string memory name, string memory sub, string memory email, string memory picture) public {
-    require(bytes(users[msg.sender].email).length !=0 ,"Wallet user is already exist");
+    require(bytes(users[msg.sender].email).length == 0 ,"Wallet user is already exist");
     SocialAccount memory user = SocialAccount(email,name,picture,sub);
     users[msg.sender] = user;
     emit accountVerified(msg.sender, sub, name, email, picture);
   }
 
   function changeProfile(string memory name, string memory sub, string memory email, string memory picture) public onlyPermissioned(msg.sender){
-    require(bytes(users[msg.sender].email).length == 0,"Wallet not found");
+    require(bytes(users[msg.sender].email).length != 0,"Wallet not found");
     SocialAccount memory user = SocialAccount(email, name, picture, sub);
     users[msg.sender] = user;
     emit profileUpdated(msg.sender, sub, name, email, picture);
   }
 
   function verifyWallet(address wallet) public view returns(string memory name, string memory email, string memory picture, string memory sub) {
-    require(bytes(users[wallet].email).length == 0, "User account not found");
+    require(bytes(users[wallet].email).length != 0, "User account not found");
     SocialAccount memory user = users[wallet];
     return(user.name, user.email, user.picture, user.sub);
   }
