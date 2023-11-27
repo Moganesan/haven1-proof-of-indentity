@@ -119,6 +119,10 @@ contract SocialHub is AccessControl {
     emit profileUpdated(msg.sender, sub, name, email, picture);
   }
 
+  function logout() public onlyPermissioned(msg.sender){
+    delete users[msg.sender];
+  }
+
   function verifyWallet(address wallet) public view returns(string memory name, string memory email, string memory picture, string memory sub) {
     require(bytes(users[wallet].email).length != 0, "User account not found");
     SocialAccount memory user = users[wallet];
