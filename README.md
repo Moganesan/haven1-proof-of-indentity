@@ -17,6 +17,10 @@ Features and Purpose
 4. Competency Rating Threshold
    An adjustable competency rating threshold ensures that only users with a specified competency rating can access the system.
 
+ScreenShots
+
+<img src="https://github.com/Moganesan/haven1-proof-of-indentity/blob/master/screenshots/Screenshot%202023-11-28%20at%201.31.17%E2%80%AFAM.png">
+
 Deployed Contract Addresses
 POI Contract: 0x074272C55821d0AAf35bd6d9ECe4C4e75D39D711
 Social Hub Contract: 0x74d0d2728432A3bA2Fc5ad86eF2dd0F2dc9c0359
