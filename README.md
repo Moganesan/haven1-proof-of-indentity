@@ -1,40 +1,22 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Social Hub
+Summary
+Social Hub is a decentralized social authentication system built on web3 technology. This project aims to provide users with a secure and verifiable method of linking their social media accounts to their blockchain wallet addresses. Leveraging Auth0 for connecting users' Google accounts, this system ensures identity verification through Haven1's IProofOfIdentity smart contract. The user interface is developed using Next.js and Tailwind CSS, seamlessly integrating with the smart contract deployed on the Ethereum blockchain.
 
-## Getting Started
+Features and Purpose
 
-First, run the development server:
+1. Social Media Authentication
+   Users can link their Google accounts through Auth0 to their blockchain wallet addresses.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. Identity Verification
+   Haven1's IProofOfIdentity contract ensures the authenticity of users' identities, providing a trust layer for social authentication.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Profile Management
+   Add Verified User: Users can register and link their social profiles with their blockchain addresses.
+   Change Profile: Permissioned users can update their profile information.
+   Logout: Users can log out, removing their social profile association.
+4. Competency Rating Threshold
+   An adjustable competency rating threshold ensures that only users with a specified competency rating can access the system.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Deployed Contract Addresses
+POI Contract: 0x074272C55821d0AAf35bd6d9ECe4C4e75D39D711
+Social Hub Contract: 0x74d0d2728432A3bA2Fc5ad86eF2dd0F2dc9c0359

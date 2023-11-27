@@ -8,64 +8,16 @@ import Check from "@mui/icons-material/Check";
 import WalletIcon from "@mui/icons-material/Wallet";
 import GroupIcon from "@mui/icons-material/Groups";
 import VerifyIcon from "@mui/icons-material/TaskAlt";
+import VerifyBadge from "@mui/icons-material/CheckOutlined";
 import StepConnector, {
   stepConnectorClasses,
 } from "@mui/material/StepConnector";
 import { useState } from "react";
 import { StepIconProps } from "@mui/material/StepIcon";
 import { MetaMaskButton, useAccount } from "@metamask/sdk-react-ui";
-import { useSDK } from "@metamask/sdk-react";
 import { ethers } from "ethers";
-import detectEthereumProvider from "@metamask/detect-provider";
 import Abi from "@/abi.json";
 import { useAuth0 } from "@auth0/auth0-react";
-
-const QontoConnector = styled(StepConnector)(({ theme }) => ({
-  [`&.${stepConnectorClasses.alternativeLabel}`]: {
-    top: 10,
-    left: "calc(-50% + 16px)",
-    right: "calc(50% + 16px)",
-  },
-  [`&.${stepConnectorClasses.active}`]: {
-    [`& .${stepConnectorClasses.line}`]: {
-      borderColor: "#784af4",
-    },
-  },
-  [`&.${stepConnectorClasses.completed}`]: {
-    [`& .${stepConnectorClasses.line}`]: {
-      borderColor: "#784af4",
-    },
-  },
-  [`& .${stepConnectorClasses.line}`]: {
-    borderColor:
-      theme.palette.mode === "dark" ? theme.palette.grey[800] : "#eaeaf0",
-    borderTopWidth: 3,
-    borderRadius: 1,
-  },
-}));
-
-const QontoStepIconRoot = styled("div")<{ ownerState: { active?: boolean } }>(
-  ({ theme, ownerState }) => ({
-    color: theme.palette.mode === "dark" ? theme.palette.grey[700] : "#eaeaf0",
-    display: "flex",
-    height: 22,
-    alignItems: "center",
-    ...(ownerState.active && {
-      color: "#784af4",
-    }),
-    "& .QontoStepIcon-completedIcon": {
-      color: "#784af4",
-      zIndex: 1,
-      fontSize: 18,
-    },
-    "& .QontoStepIcon-circle": {
-      width: 8,
-      height: 8,
-      borderRadius: "50%",
-      backgroundColor: "currentColor",
-    },
-  })
-);
 
 const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -135,6 +87,42 @@ function ColorlibStepIcon(props: StepIconProps) {
   );
 }
 
+const ProfileViewComponent = ({ props }: any) => {
+  return (
+    <div className="grid place-items-center">
+      <div className="bg-slate-800 h-96 w-72 py-5">
+        <div className="flex items-center flex-col px-3">
+          <div className="w-20 h-20 rounded-full overflow-hidden">
+            <img src={props.picture} />
+          </div>
+          <h1 className="font-bold text-2xl mt2">{props.name}</h1>
+          <h1 className="bg-green-500 rounded-md mt-3 text-white">
+            <>
+              <VerifyBadge />
+            </>
+          </h1>
+          <button
+            className="px-3 py-2 bg-orange-400 w-full mt-10"
+            onClick={async () => {
+              await props.logoutWallet();
+              await props.logout();
+            }}
+          >
+            Logout
+          </button>
+
+          <button
+            className="px-3 py-2 w-full bg-orange-400 mt-6"
+            onClick={() => props.fetchAccount()}
+          >
+            Fetch Account
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const steps = [
   "Connect your wallet",
   "Connect your social accounts",
@@ -145,12 +133,35 @@ export default function CustomizedSteppers() {
   const { isConnected } = useAccount();
   const [socialAccount, setSocialAccount] = useState<any>();
   const [currentStep, setCurrentStep] = useState(0);
-  const [aadhaar, setAadhaar] = useState("");
   const { loginWithPopup, isAuthenticated, logout, user } = useAuth0();
+  const [verificationCompleted, setVerificationCompleted] = useState(false);
+  const [changeProfile, setChangeProfile] = useState(false);
 
-  const {} = useSDK();
-  const nextStep = () => {
+  const nextStep = async () => {
     setCurrentStep((prev) => prev + 1);
+  };
+
+  useEffect(() => {
+    if (changeProfile) {
+      ChangeProfile();
+    }
+  }, [changeProfile]);
+  const logoutWallet = async () => {
+    const contractAddress: any = process.env.NEXT_PUBLIC_SOCIAL_HUB_CONTRACT;
+    console.log("COntract Address", contractAddress);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const signer = provider.getSigner();
+    console.log(await signer.getAddress());
+    const contract = new ethers.Contract(contractAddress, Abi, signer);
+
+    try {
+      const contractCall = await contract.logout(signer.getAddress());
+
+      await contractCall.wait();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   useEffect(() => {
@@ -166,7 +177,7 @@ export default function CustomizedSteppers() {
     }
   }, [isAuthenticated]);
 
-  const verifyWallet = async () => {
+  const fetchAccount = async () => {
     const contractAddress: any = process.env.NEXT_PUBLIC_SOCIAL_HUB_CONTRACT;
     console.log("COntract Address", contractAddress);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -175,16 +186,14 @@ export default function CustomizedSteppers() {
     console.log(await signer.getAddress());
     const contract = new ethers.Contract(contractAddress, Abi, signer);
 
-    console.log(socialAccount);
-
-    try {
-      const contractCall = await contract.verifyWallet(signer.getAddress());
-    } catch (err) {
-      console.log(err);
+    const checkProfile = await contract.verifyWallet(signer.getAddress());
+    if (checkProfile) {
+      alert(checkProfile);
     }
   };
 
-  const verifyProfile = async () => {
+  const verifyWallet = async () => {
+    setVerificationCompleted(true);
     const contractAddress: any = process.env.NEXT_PUBLIC_SOCIAL_HUB_CONTRACT;
     console.log("COntract Address", contractAddress);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -193,7 +202,16 @@ export default function CustomizedSteppers() {
     console.log(await signer.getAddress());
     const contract = new ethers.Contract(contractAddress, Abi, signer);
 
-    console.log(socialAccount);
+    try {
+      const checkProfile = await contract.verifyWallet(signer.getAddress());
+      console.log(checkProfile);
+      if (checkProfile) {
+        setVerificationCompleted(true);
+        return;
+      }
+    } catch (err) {
+      console.log(err);
+    }
 
     try {
       const contractCall = await contract.addVerifiedUser(
@@ -205,82 +223,98 @@ export default function CustomizedSteppers() {
 
       await contractCall.wait();
 
-      console.log(contractCall);
+      setVerificationCompleted(true);
     } catch (err) {
       console.log(err);
     }
   };
+
   return (
     <div>
       <h1 className="font-bold text-center text-4xl mt-40 mb-24">Social Hub</h1>
-      <Stack sx={{ width: "100%" }} spacing={4}>
-        <Stepper
-          alternativeLabel
-          activeStep={currentStep}
-          connector={<ColorlibConnector />}
-        >
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel StepIconComponent={ColorlibStepIcon}>
-                <h1 className="text-white">{label}</h1>
-              </StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-      </Stack>
-      <div className="flex items-center justify-center mt-32">
-        {currentStep == 0 ? (
-          <div className="flex flex-col">
-            <MetaMaskButton theme={"dark"} color="blue"></MetaMaskButton>
-            {isConnected && (
-              <button
-                className="px-3 py-2 bg-orange-400 mt-10"
-                onClick={() => nextStep()}
-              >
-                Next
-              </button>
-            )}
-          </div>
-        ) : currentStep == 1 ? (
-          <div>
-            {socialAccount && (
-              <div className="text-center">
-                <h1 className="text-green-500">Google account linked!</h1>
-                <div className="flex mt-3 items-center">
-                  <div className="w-14 text-white h-14 rounded-full overflow-hidden">
-                    <img src={socialAccount.picture} />
+      {verificationCompleted ? (
+        <ProfileViewComponent
+          props={{
+            ...socialAccount,
+            loginWithPopup: loginWithPopup,
+            setChangeProfile,
+            logout,
+            logoutWallet,
+            fetchAccount,
+          }}
+        />
+      ) : (
+        <>
+          <Stack sx={{ width: "100%" }} spacing={4}>
+            <Stepper
+              alternativeLabel
+              activeStep={currentStep}
+              connector={<ColorlibConnector />}
+            >
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel StepIconComponent={ColorlibStepIcon}>
+                    <h1 className="text-white">{label}</h1>
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Stack>
+          <div className="flex items-center justify-center mt-32">
+            {currentStep == 0 ? (
+              <div className="flex flex-col">
+                <MetaMaskButton theme={"dark"} color="blue"></MetaMaskButton>
+                {isConnected && (
+                  <button
+                    className="px-3 py-2 bg-orange-400 mt-10"
+                    onClick={() => nextStep()}
+                  >
+                    Next
+                  </button>
+                )}
+              </div>
+            ) : currentStep == 1 ? (
+              <div>
+                {socialAccount && (
+                  <div className="text-center">
+                    <h1 className="text-green-500">Google account linked!</h1>
+                    <div className="flex mt-3 items-center">
+                      <div className="w-14 text-white h-14 rounded-full overflow-hidden">
+                        <img src={socialAccount.picture} />
+                      </div>
+                      <h1 className="font-bold ml-3">{socialAccount.name}</h1>
+                    </div>
                   </div>
-                  <h1 className="font-bold ml-3">{socialAccount.name}</h1>
-                </div>
+                )}
+                {socialAccount ? (
+                  <button
+                    className="px-3 py-2 bg-orange-400 mt-10"
+                    onClick={() => nextStep()}
+                  >
+                    Next
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => loginWithPopup()}
+                    className="px-3 py-2 bg-orange-400 mt-10"
+                  >
+                    Connect Social Accounts
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                <button
+                  className="px-3 py-2 bg-orange-400 mt-10"
+                  onClick={() => verifyWallet()}
+                >
+                  Verify
+                </button>
               </div>
             )}
-            {socialAccount ? (
-              <button
-                className="px-3 py-2 bg-orange-400 mt-10"
-                onClick={() => nextStep()}
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                onClick={() => loginWithPopup()}
-                className="px-3 py-2 bg-orange-400 mt-10"
-              >
-                Connect Social Accounts
-              </button>
-            )}
           </div>
-        ) : (
-          <div className="flex flex-col">
-            <button
-              className="px-3 py-2 bg-orange-400 mt-10"
-              onClick={() => verifyWallet()}
-            >
-              Verify
-            </button>
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
